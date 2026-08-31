@@ -12,7 +12,7 @@ Este documento resume cómo está armado el juego hoy y qué tener en cuenta si 
 - Adivinar mal **no termina la partida**: se descarta ese personaje de los candidatos y se sigue jugando. La partida termina solo cuando alguien adivina bien.
 - Los perfiles de los personajes (género, pelo, lentes, humano) **no tienen por qué ser únicos** — puede haber dos personajes con los mismos 4 atributos. El juego lo tiene en cuenta: si ninguna pregunta separa a los candidatos que quedan, la máquina arriesga en vez de trabarse.
 - Cuando la máquina le pregunta al humano, el humano no puede mentir: si contesta algo que no coincide con su secreto, se rechaza y se le vuelve a preguntar.
-- No hay ranking ni persistencia entre partidas — cada corrida es independiente.
+- No hay ranking ni comparación entre jugadores — pero el humano sí acumula sus propias victorias entre corridas: `persistencia.MarcadorPartidas` las guarda en `marcador.properties` (raíz del proyecto, no versionado) y `MotorJuego` muestra el resumen apenas arranca `jugarFlujoCompleto`. Cada partida ganada (a M1, y a M2 si corresponde) suma una victoria por separado.
 
 ## Estrategia y algoritmos
 
@@ -32,12 +32,14 @@ src/adivinaquien/
 ├── dominio/            // datos: Personaje, Genero, ColorPelo, Tablero, CargaPersonajes
 ├── algoritmos/         // Pregunta, CatalogoPreguntas, EstrategiaPreguntas + sus 2 implementaciones
 ├── juego/              // Maquina (dato simple) y MotorJuego (toda la lógica de turnos)
-└── ui/                 // InterfazUsuario (interface) y ConsolaUI (consola)
+├── persistencia/        // MarcadorPartidas: guarda/lee las victorias del humano en marcador.properties
+└── ui/                  // InterfazUsuario (interface) y ConsolaUI (consola)
 ```
 
 - `dominio` no depende de nada más del proyecto.
 - `algoritmos` depende solo de `dominio`.
-- `juego` depende de `dominio`, `algoritmos` y la interfaz `InterfazUsuario` (nunca de `ConsolaUI` directamente).
+- `persistencia` no depende de nada más del proyecto (solo `java.io`/`java.util`).
+- `juego` depende de `dominio`, `algoritmos`, la interfaz `InterfazUsuario` (nunca de `ConsolaUI` directamente) y `persistencia`.
 - Toda la entrada/salida pasa por `InterfazUsuario`, para poder reemplazar la consola por una GUI (JavaFX/Swing) sin tocar el resto del juego.
 - `MotorJuego` concentra toda la coreografía del juego (turnos, secretos, anti-mentira). Se prefiere código plano y legible en un solo lugar antes que muchas clases chicas para cada responsabilidad mínima.
 

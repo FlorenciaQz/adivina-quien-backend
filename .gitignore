@@ -31,3 +31,6 @@ out/
 .idea/workspace.xml
 .idea/misc.xml
 .idea/modules.xml
+
+# Datos generados en tiempo de ejecución
+marcador.properties

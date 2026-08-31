@@ -8,6 +8,7 @@ import adivinaquien.dominio.Personaje;
 import adivinaquien.dominio.Tablero;
 import adivinaquien.juego.Maquina;
 import adivinaquien.juego.MotorJuego;
+import adivinaquien.persistencia.MarcadorPartidas;
 import adivinaquien.ui.ConsolaUI;
 import adivinaquien.ui.InterfazUsuario;
 import java.util.List;
@@ -20,6 +21,7 @@ public class Main {
 
         InterfazUsuario ui = new ConsolaUI();
         CatalogoPreguntas catalogo = new CatalogoPreguntas();
+        MarcadorPartidas marcador = new MarcadorPartidas();
 
         // Dos heurísticas greedy distintas para poder comparar:
         // M1 busca la pregunta que divide más parejo a los candidatos,
@@ -27,7 +29,7 @@ public class Main {
         Maquina m1 = new Maquina("Máquina 1", 70, new EstrategiaGreedy(catalogo));
         Maquina m2 = new Maquina("Máquina 2", 30, new EstrategiaDesbalanceada(catalogo));
 
-        MotorJuego motor = new MotorJuego(tablero, ui, catalogo);
+        MotorJuego motor = new MotorJuego(tablero, ui, catalogo, marcador);
 
         List<String> modos = List.of(
             "Humano vs Máquina (jugás contra M1 y, si ganás, contra M2)",

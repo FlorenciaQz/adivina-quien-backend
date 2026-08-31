@@ -4,6 +4,7 @@ import adivinaquien.algoritmos.CatalogoPreguntas;
 import adivinaquien.algoritmos.Pregunta;
 import adivinaquien.dominio.Personaje;
 import adivinaquien.dominio.Tablero;
+import adivinaquien.persistencia.MarcadorPartidas;
 import adivinaquien.ui.InterfazUsuario;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -15,12 +16,14 @@ public class MotorJuego {
     private final Tablero tablero;
     private final InterfazUsuario ui;
     private final CatalogoPreguntas catalogo;
+    private final MarcadorPartidas marcador;
     private final Random random = new Random();
 
-    public MotorJuego(Tablero tablero, InterfazUsuario ui, CatalogoPreguntas catalogo) {
+    public MotorJuego(Tablero tablero, InterfazUsuario ui, CatalogoPreguntas catalogo, MarcadorPartidas marcador) {
         this.tablero = tablero;
         this.ui = ui;
         this.catalogo = catalogo;
+        this.marcador = marcador;
     }
 
     public void jugarMaquinaVsMaquina(Maquina m1, Maquina m2) {
@@ -69,6 +72,8 @@ public class MotorJuego {
     // El humano conserva su mismo personaje secreto en ambas partidas. M2 arranca con los
     // candidatos que M1 ya habia logrado filtrar (no repite lo que M1 ya averiguo).
     public void jugarFlujoCompleto(String nombreHumano, Maquina m1, Maquina m2) {
+        mostrarRecord(nombreHumano);
+
         Personaje secretoHumano = pedirSecretoHumano();
         List<Personaje> personajes = tablero.personajes();
 
@@ -84,6 +89,13 @@ public class MotorJuego {
 
         Personaje secretoM2 = elegirSecreto(personajes);
         jugarUnaPartidaHumanoVsMaquina(nombreHumano, secretoHumano, m2, secretoM2, candidatosM1);
+    }
+
+    // Muestra cuántas victorias tiene ya registradas este jugador, antes de arrancar.
+    private void mostrarRecord(String nombreHumano) {
+        int victoriasPrevias = marcador.victoriasDe(nombreHumano);
+        String resumen = victoriasPrevias == 1 ? "1 victoria registrada" : victoriasPrevias + " victorias registradas";
+        ui.mostrar("¡Hola " + nombreHumano + "! Llevás " + resumen + ".");
     }
 
     // Corre el loop de turnos de una partida humano-vs-maquina. candidatosMaquina se
@@ -103,10 +115,16 @@ public class MotorJuego {
 
                 if (opcion == 1) {
                     Personaje sospecha = pedirPersonajePorId("¿A quién adivinás? (número): ", tablero.personajes());
-                    boolean acierto = anunciarAdivinanza(nombreHumano, sospecha, secretoMaquina);
-                    if (acierto) {
+                    if (sospecha.getId() == secretoMaquina.getId()) {
+                        // Se registra antes de armar el mensaje para que el conteo ya incluya esta victoria.
+                        marcador.registrarVictoria(nombreHumano);
+                        int totalVictorias = marcador.victoriasDe(nombreHumano);
+                        String resumen = totalVictorias == 1 ? "1 victoria" : totalVictorias + " victorias";
+                        ui.mostrar(nombreHumano + " adivinó: " + sospecha.getNombre() + ". ¡" + nombreHumano
+                            + " gana! Llevás " + resumen + ".");
                         return true;
                     }
+                    ui.mostrar(nombreHumano + " arriesgó con " + sospecha.getNombre() + " y no era. Se descarta y sigue el juego.");
                     descartarCandidato(candidatosHumano, sospecha);
                 } else {
                     Pregunta pregunta = pedirPreguntaHumano();
@@ -124,6 +142,7 @@ public class MotorJuego {
                 Pregunta pregunta = cantidad == 1 ? null : maquina.getEstrategia().mejorPregunta(candidatosMaquina);
                 if (pregunta == null || decideArriesgar(cantidad, maquina.getRiesgo())) {
                     if (arriesgarYAdivinar(maquina.getNombre(), candidatosMaquina, secretoHumano)) {
+                        mostrarVictoriasSinCambios(nombreHumano);
                         return false;
                     }
                 } else {
@@ -143,6 +162,14 @@ public class MotorJuego {
         double probAcierto = 1.0 / cantidadCandidatos;
         double umbral = 1.0 - (riesgo / 100.0);
         return probAcierto >= umbral;
+    }
+
+    // Cuando el humano pierde la partida, el marcador no cambia: se lo aclara para que
+    // no parezca que se reseteó.
+    private void mostrarVictoriasSinCambios(String nombreHumano) {
+        int totalVictorias = marcador.victoriasDe(nombreHumano);
+        String resumen = totalVictorias == 1 ? "1 victoria" : totalVictorias + " victorias";
+        ui.mostrar("Se mantienen tus " + resumen + ".");
     }
 
     // imprime el resultado de una adivinanza y devuelve si acertó. Errar no termina
