@@ -12,8 +12,6 @@ import java.util.Random;
 
 public class MotorJuego {
 
-    private static final char SEÑAL_LIMPIAR = '\f';
-
     private final Tablero tablero;
     private final InterfazUsuario ui;
     private final CatalogoPreguntas catalogo;
@@ -47,14 +45,11 @@ public class MotorJuego {
             // arriesgar, igual que con 1 solo candidato.
             Pregunta pregunta = cantidad == 1 ? null : turno.getEstrategia().mejorPregunta(candidatosDelTurno);
             if (pregunta == null || decideArriesgar(cantidad, turno.getRiesgo())) {
-                Personaje sospecha = candidatosDelTurno.get(0);
-                ui.mostrar(turno.getNombre() + " arriesga y adivina: " + sospecha.getNombre()
+                ui.mostrar(turno.getNombre() + " arriesga y adivina: " + candidatosDelTurno.get(0).getNombre()
                     + " (tenía " + cantidad + " candidatos posibles).");
-                boolean acierto = anunciarAdivinanza(turno.getNombre(), sospecha, secretoRival);
-                if (acierto) {
+                if (arriesgarYAdivinar(turno.getNombre(), candidatosDelTurno, secretoRival)) {
                     return;
                 }
-                descartarCandidato(candidatosDelTurno, sospecha);
             } else {
                 int si = contarCoincidencias(candidatosDelTurno, pregunta, true);
                 int no = cantidad - si;
@@ -128,12 +123,9 @@ public class MotorJuego {
                 // no queda otra que arriesgar.
                 Pregunta pregunta = cantidad == 1 ? null : maquina.getEstrategia().mejorPregunta(candidatosMaquina);
                 if (pregunta == null || decideArriesgar(cantidad, maquina.getRiesgo())) {
-                    Personaje sospecha = candidatosMaquina.get(0);
-                    boolean acierto = anunciarAdivinanza(maquina.getNombre(), sospecha, secretoHumano);
-                    if (acierto) {
+                    if (arriesgarYAdivinar(maquina.getNombre(), candidatosMaquina, secretoHumano)) {
                         return false;
                     }
-                    descartarCandidato(candidatosMaquina, sospecha);
                 } else {
                     boolean verdad = obtenerRespuestaConAntiMentira(pregunta, secretoHumano);
                     filtrarCandidatos(candidatosMaquina, pregunta, verdad);
@@ -161,6 +153,17 @@ public class MotorJuego {
             ui.mostrar(nombreAdivinador + " adivinó: " + sospecha.getNombre() + ". ¡" + nombreAdivinador + " gana!");
         } else {
             ui.mostrar(nombreAdivinador + " arriesgó con " + sospecha.getNombre() + " y no era. Se descarta y sigue el juego.");
+        }
+        return acierto;
+    }
+
+    // Arriesga: adivina el primer candidato restante. Si acierta, el llamador corta el
+    // juego; si falla, se descarta ese candidato y el turno sigue. Devuelve si acertó.
+    private boolean arriesgarYAdivinar(String nombreAdivinador, List<Personaje> candidatos, Personaje secretoReal) {
+        Personaje sospecha = candidatos.get(0);
+        boolean acierto = anunciarAdivinanza(nombreAdivinador, sospecha, secretoReal);
+        if (!acierto) {
+            descartarCandidato(candidatos, sospecha);
         }
         return acierto;
     }
@@ -218,7 +221,7 @@ public class MotorJuego {
     // Muestra el tablero completo (como tarjetas) marcando cuáles siguen siendo
     // candidatos posibles y cuáles ya se descartaron, para no depender de la memoria.
     private void mostrarTablero(String titulo, List<Personaje> todos, List<Personaje> vigentes) {
-        ui.mostrar(SEÑAL_LIMPIAR + titulo);
+        ui.limpiarYMostrar(titulo);
         for (int i = 0; i < todos.size(); i++) {
             Personaje p = todos.get(i);
             String marca = esVigente(p, vigentes) ? "[posible]  " : "[descartado]";

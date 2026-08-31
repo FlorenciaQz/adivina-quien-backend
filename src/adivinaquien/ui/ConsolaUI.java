@@ -5,12 +5,6 @@ import java.util.Scanner;
 
 public class ConsolaUI implements InterfazUsuario {
 
-    // Convención de texto: si un mensaje arranca con este carácter (form feed,
-    // el "nueva página" clásico de terminal), ConsolaUI limpia la pantalla antes
-    // de mostrarlo. Es solo una señal en el texto: el resto de las capas no sabe
-    // nada de ANSI ni de terminales.
-    private static final char SEÑAL_LIMPIAR = '\f';
-
     private static final String ANSI_LIMPIAR_PANTALLA = "\u001B[H\u001B[2J";
     private static final String ANSI_RESET = "\u001B[0m";
     private static final String ANSI_ROJO = "\u001B[31m";
@@ -19,12 +13,12 @@ public class ConsolaUI implements InterfazUsuario {
     private final Scanner scanner = new Scanner(System.in);
 
     public void mostrar(String mensaje) {
-        String texto = mensaje;
-        if (texto.length() > 0 && texto.charAt(0) == SEÑAL_LIMPIAR) {
-            System.out.print(ANSI_LIMPIAR_PANTALLA);
-            texto = texto.substring(1);
-        }
-        System.out.println(colorear(texto));
+        System.out.println(colorear(mensaje));
+    }
+
+    public void limpiarYMostrar(String mensaje) {
+        System.out.print(ANSI_LIMPIAR_PANTALLA);
+        mostrar(mensaje);
     }
 
     public String pedirTexto(String prompt) {
