@@ -1,5 +1,6 @@
 package adivinaquien.ui;
 
+import adivinaquien.dominio.Personaje;
 import java.util.List;
 import java.util.Scanner;
 
@@ -10,7 +11,15 @@ public class ConsolaUI implements InterfazUsuario {
     private static final String ANSI_ROJO = "\u001B[31m";
     private static final String ANSI_VERDE = "\u001B[32m";
 
-    private final Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner;
+
+    public ConsolaUI() {
+        this(new Scanner(System.in));
+    }
+
+    public ConsolaUI(Scanner scanner) {
+        this.scanner = scanner;
+    }
 
     public void mostrar(String mensaje) {
         System.out.println(colorear(mensaje));
@@ -43,6 +52,42 @@ public class ConsolaUI implements InterfazUsuario {
                 // se ignora, se vuelve a pedir
             }
             System.out.println("Opción inválida. Ingresá un número entre 1 y " + opciones.size() + ".");
+        }
+    }
+
+    // Muestra el tablero completo marcando cuáles siguen siendo candidatos posibles y cuáles ya se descartaron.
+    public void mostrarTablero(String titulo, List<Personaje> todos, List<Personaje> vigentes) {
+        limpiarYMostrar(titulo);
+        for (int i = 0; i < todos.size(); i++) {
+            Personaje p = todos.get(i);
+            String marca = esVigente(p, vigentes) ? "[posible]  " : "[descartado]";
+            mostrar("  " + marca + " #" + p.getId() + " " + p.getNombre() + " - " + p.descripcionAtributos());
+        }
+    }
+
+    private boolean esVigente(Personaje p, List<Personaje> vigentes) {
+        for (int i = 0; i < vigentes.size(); i++) {
+            if (vigentes.get(i).getId() == p.getId()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Personaje pedirPersonaje(String prompt, List<Personaje> elegibles) {
+        while (true) {
+            String texto = pedirTexto(prompt);
+            try {
+                int id = Integer.parseInt(texto.trim());
+                for (int i = 0; i < elegibles.size(); i++) {
+                    if (elegibles.get(i).getId() == id) {
+                        return elegibles.get(i);
+                    }
+                }
+            } catch (NumberFormatException e) {
+                // se ignora, se vuelve a pedir
+            }
+            mostrar("No existe ese personaje. Probá de nuevo.");
         }
     }
 

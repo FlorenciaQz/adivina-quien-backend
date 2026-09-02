@@ -109,12 +109,12 @@ public class MotorJuego {
 
         while (true) {
             if (turnoHumano) {
-                mostrarTablero("Candidatos para el secreto del rival:", tablero.personajes(), candidatosHumano);
+                ui.mostrarTablero("Candidatos para el secreto del rival:", tablero.personajes(), candidatosHumano);
                 List<String> opciones = List.of("Hacer una pregunta", "Adivinar un personaje");
                 int opcion = ui.pedirOpcion("Es tu turno. ¿Qué querés hacer?", opciones);
 
                 if (opcion == 1) {
-                    Personaje sospecha = pedirPersonajePorId("¿A quién adivinás? (número): ", tablero.personajes());
+                    Personaje sospecha = ui.pedirPersonaje("¿A quién adivinás? (número): ", tablero.personajes());
                     if (sospecha.getId() == secretoMaquina.getId()) {
                         // Se registra antes de armar el mensaje para que el conteo ya incluya esta victoria.
                         marcador.registrarVictoria(nombreHumano);
@@ -241,28 +241,8 @@ public class MotorJuego {
 
     private Personaje pedirSecretoHumano() {
         List<Personaje> todos = tablero.personajes();
-        mostrarTablero("Elegí tu personaje secreto. Estos son los disponibles:", todos, todos);
-        return pedirPersonajePorId("Elegí tu personaje secreto por su número (no lo vas a poder cambiar): ", todos);
-    }
-
-    // Muestra el tablero completo (como tarjetas) marcando cuáles siguen siendo
-    // candidatos posibles y cuáles ya se descartaron, para no depender de la memoria.
-    private void mostrarTablero(String titulo, List<Personaje> todos, List<Personaje> vigentes) {
-        ui.limpiarYMostrar(titulo);
-        for (int i = 0; i < todos.size(); i++) {
-            Personaje p = todos.get(i);
-            String marca = esVigente(p, vigentes) ? "[posible]  " : "[descartado]";
-            ui.mostrar("  " + marca + " #" + p.getId() + " " + p.getNombre() + " - " + p.descripcionAtributos());
-        }
-    }
-
-    private boolean esVigente(Personaje p, List<Personaje> vigentes) {
-        for (int i = 0; i < vigentes.size(); i++) {
-            if (vigentes.get(i).getId() == p.getId()) {
-                return true;
-            }
-        }
-        return false;
+        ui.mostrarTablero("Elegí tu personaje secreto. Estos son los disponibles:", todos, todos);
+        return ui.pedirPersonaje("Elegí tu personaje secreto por su número (no lo vas a poder cambiar): ", todos);
     }
 
     private Pregunta pedirPreguntaHumano() {
@@ -273,23 +253,6 @@ public class MotorJuego {
         }
         int opcion = ui.pedirOpcion("Elegí una pregunta:", textos);
         return todas.get(opcion);
-    }
-
-    private Personaje pedirPersonajePorId(String prompt, List<Personaje> lista) {
-        while (true) {
-            String texto = ui.pedirTexto(prompt);
-            try {
-                int id = Integer.parseInt(texto.trim());
-                for (int i = 0; i < lista.size(); i++) {
-                    if (lista.get(i).getId() == id) {
-                        return lista.get(i);
-                    }
-                }
-            } catch (NumberFormatException e) {
-                // se ignora, se vuelve a pedir
-            }
-            ui.mostrar("No existe ese personaje. Probá de nuevo.");
-        }
     }
 
     // Sorteo independiente entre los 23: no hace falta excluir a nadie (ni el secreto
