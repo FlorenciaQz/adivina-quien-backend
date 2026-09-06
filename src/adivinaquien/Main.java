@@ -12,6 +12,7 @@ import adivinaquien.persistencia.MarcadorPartidas;
 import adivinaquien.ui.ConsolaUI;
 import adivinaquien.ui.InterfazUsuario;
 import java.util.List;
+import java.util.Random;
 
 public class Main {
 
@@ -29,7 +30,8 @@ public class Main {
         Maquina m1 = new Maquina("Máquina 1", 70, new EstrategiaGreedy(catalogo));
         Maquina m2 = new Maquina("Máquina 2", 30, new EstrategiaDesbalanceada(catalogo));
 
-        MotorJuego motor = new MotorJuego(tablero, ui, catalogo, marcador);
+        Random random = crearRandom(ui);
+        MotorJuego motor = new MotorJuego(tablero, ui, catalogo, marcador, random);
 
         List<String> modos = List.of(
             "Humano vs Máquina (jugás contra M1 y, si ganás, contra M2)",
@@ -41,6 +43,24 @@ public class Main {
             motor.jugarFlujoCompleto(nombreHumano, m1, m2);
         } else {
             motor.jugarMaquinaVsMaquina(m1, m2);
+        }
+    }
+
+    // Si se pasa -Dseed=42, el sorteo de personajes secretos es reproducible: la misma
+    // semilla da siempre la misma partida. Sirve para poder repetir un caso puntual.
+    // Sin el parámetro, cada corrida sortea distinto.
+    private static Random crearRandom(InterfazUsuario ui) {
+        String semilla = System.getProperty("seed");
+        if (semilla == null) {
+            return new Random();
+        }
+        try {
+            long valor = Long.parseLong(semilla.trim());
+            ui.mostrar("Semilla fija: " + valor + " (partida reproducible).");
+            return new Random(valor);
+        } catch (NumberFormatException e) {
+            ui.mostrar("La semilla \"" + semilla + "\" no es un número válido. Se usa una aleatoria.");
+            return new Random();
         }
     }
 }

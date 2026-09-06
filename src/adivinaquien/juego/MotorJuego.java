@@ -16,13 +16,14 @@ public class MotorJuego {
     private final InterfazUsuario ui;
     private final CatalogoPreguntas catalogo;
     private final MarcadorPartidas marcador;
-    private final Random random = new Random();
+    private final Random random;
 
-    public MotorJuego(Tablero tablero, InterfazUsuario ui, CatalogoPreguntas catalogo, MarcadorPartidas marcador) {
+    public MotorJuego(Tablero tablero, InterfazUsuario ui, CatalogoPreguntas catalogo, MarcadorPartidas marcador, Random random) {
         this.tablero = tablero;
         this.ui = ui;
         this.catalogo = catalogo;
         this.marcador = marcador;
+        this.random = random;
     }
 
     public void jugarMaquinaVsMaquina(Maquina m1, Maquina m2) {
