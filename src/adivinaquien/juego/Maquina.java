@@ -18,8 +18,11 @@ public final class Maquina {
         return nombre;
     }
 
-    public int getRiesgo() {
-        return riesgo;
+    // arriesga si la probabilidad de acertar de una ya supera el umbral que marca su riesgo (0..100)
+    public boolean decideArriesgar(int cantidadCandidatos) {
+        double probAcierto = 1.0 / cantidadCandidatos;
+        double umbral = 1.0 - (riesgo / 100.0);
+        return probAcierto >= umbral;
     }
 
     public EstrategiaPreguntas getEstrategia() {

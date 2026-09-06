@@ -47,7 +47,7 @@ public class MotorJuego {
             // los distinga (mejorPregunta devuelve null): ahí no hay más remedio que
             // arriesgar, igual que con 1 solo candidato.
             Pregunta pregunta = cantidad == 1 ? null : turno.getEstrategia().mejorPregunta(candidatosDelTurno);
-            if (pregunta == null || decideArriesgar(cantidad, turno.getRiesgo())) {
+            if (pregunta == null || turno.decideArriesgar(cantidad)) {
                 ui.mostrar(turno.getNombre() + " arriesga y adivina: " + candidatosDelTurno.get(0).getNombre()
                     + " (tenía " + cantidad + " candidatos posibles).");
                 if (arriesgarYAdivinar(turno.getNombre(), candidatosDelTurno, secretoRival)) {
@@ -140,7 +140,7 @@ public class MotorJuego {
                 // a los candidatos restantes (perfiles idénticos), mejorPregunta da null y
                 // no queda otra que arriesgar.
                 Pregunta pregunta = cantidad == 1 ? null : maquina.getEstrategia().mejorPregunta(candidatosMaquina);
-                if (pregunta == null || decideArriesgar(cantidad, maquina.getRiesgo())) {
+                if (pregunta == null || maquina.decideArriesgar(cantidad)) {
                     if (arriesgarYAdivinar(maquina.getNombre(), candidatosMaquina, secretoHumano)) {
                         mostrarVictoriasSinCambios(nombreHumano);
                         return false;
@@ -155,13 +155,6 @@ public class MotorJuego {
 
             turnoHumano = !turnoHumano;
         }
-    }
-
-    // arriesga si la probabilidad de acertar de una ya supera el umbral que marca el riesgo (0..100)
-    private boolean decideArriesgar(int cantidadCandidatos, int riesgo) {
-        double probAcierto = 1.0 / cantidadCandidatos;
-        double umbral = 1.0 - (riesgo / 100.0);
-        return probAcierto >= umbral;
     }
 
     // Cuando el humano pierde la partida, el marcador no cambia: se lo aclara para que
