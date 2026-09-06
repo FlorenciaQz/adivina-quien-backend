@@ -3,19 +3,19 @@ package adivinaquien.juego;
 import adivinaquien.algoritmos.Pregunta;
 import adivinaquien.dominio.Personaje;
 import adivinaquien.dominio.Tablero;
-import adivinaquien.persistencia.MarcadorPartidas;
+import adivinaquien.persistencia.IMarcador;
 import java.util.List;
 import java.util.Random;
 
 public class MotorJuego {
 
     private final Tablero tablero;
-    private final MarcadorPartidas marcador;
+    private final IMarcador marcador;
     private final Random random;
     private final EntradaJugador entrada;
     private final PresentadorJuego presentador;
 
-    public MotorJuego(Tablero tablero, MarcadorPartidas marcador, Random random,
+    public MotorJuego(Tablero tablero, IMarcador marcador, Random random,
                       EntradaJugador entrada, PresentadorJuego presentador) {
         this.tablero = tablero;
         this.marcador = marcador;

@@ -10,7 +10,7 @@ import java.util.Properties;
 // texto plano (marcador.properties, en la raíz del proyecto) para que sobreviva entre
 // corridas. No depende de InterfazUsuario a propósito: es pura persistencia, no le
 // importa cómo se muestra la info.
-public class MarcadorPartidas {
+public class MarcadorPartidas implements IMarcador {
 
     private static final String ARCHIVO = "marcador.properties";
 

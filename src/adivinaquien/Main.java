@@ -9,6 +9,7 @@ import adivinaquien.dominio.Tablero;
 import adivinaquien.juego.Maquina;
 import adivinaquien.juego.MotorJuego;
 import adivinaquien.juego.EntradaJugador;
+import adivinaquien.persistencia.IMarcador;
 import adivinaquien.persistencia.MarcadorPartidas;
 import adivinaquien.ui.ConsolaUI;
 import adivinaquien.ui.InterfazUsuario;
@@ -24,7 +25,7 @@ public class Main {
 
         InterfazUsuario ui = new ConsolaUI();
         CatalogoPreguntas catalogo = new CatalogoPreguntas();
-        MarcadorPartidas marcador = new MarcadorPartidas();
+        IMarcador marcador = new MarcadorPartidas();
 
         // Dos heurísticas greedy distintas para poder comparar:
         // M1 busca la pregunta que divide más parejo a los candidatos,
