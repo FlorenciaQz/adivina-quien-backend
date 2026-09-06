@@ -4,6 +4,9 @@ import adivinaquien.algoritmos.Pregunta;
 import adivinaquien.dominio.Personaje;
 import java.util.Iterator;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+
 
 // Operaciones sobre listas de candidatos.
 //Nota: filtrar y descartar modifican la lista recibida in-place, no devuelven una
@@ -43,12 +46,11 @@ public final class Candidatos {
         }
     }
 
-    public static boolean contiene(List<Personaje> candidatos, Personaje p) {
+    public static Set<Integer> ids(List<Personaje> candidatos) {
+        Set<Integer> resultado = new HashSet<Integer>();
         for (int i = 0; i < candidatos.size(); i++) {
-            if (candidatos.get(i).getId() == p.getId()) {
-                return true;
-            }
+            resultado.add(candidatos.get(i).getId());
         }
-        return false;
+        return resultado;
     }
 }

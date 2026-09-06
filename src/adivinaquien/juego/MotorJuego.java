@@ -108,7 +108,8 @@ public class MotorJuego {
 
         while (true) {
             if (turnoHumano) {
-                mostrarTablero("Candidatos para el secreto del rival:", tablero.personajes(), candidatosHumano);
+                ui.mostrarTablero("Candidatos para el secreto del rival:",
+                        tablero.personajes(), Candidatos.ids(candidatosHumano));
                 List<String> opciones = List.of("Hacer una pregunta", "Adivinar un personaje");
                 int opcion = ui.pedirOpcion("Es tu turno. ¿Qué querés hacer?", opciones);
 
@@ -202,22 +203,11 @@ public class MotorJuego {
 
     private Personaje pedirSecretoHumano() {
         List<Personaje> todos = tablero.personajes();
-        mostrarTablero("Elegí tu personaje secreto. Estos son los disponibles:", todos, todos);
+        ui.mostrarTablero("Elegí tu personaje secreto. Estos son los disponibles:",
+                todos, Candidatos.ids(todos));
         return entrada.pedirPersonajePorId(
                 "Elegí tu personaje secreto por su número (no lo vas a poder cambiar): ", todos);
     }
-
-    // Muestra el tablero completo (como tarjetas) marcando cuáles siguen siendo
-    // candidatos posibles y cuáles ya se descartaron, para no depender de la memoria.
-    private void mostrarTablero(String titulo, List<Personaje> todos, List<Personaje> vigentes) {
-        ui.limpiarYMostrar(titulo);
-        for (int i = 0; i < todos.size(); i++) {
-            Personaje p = todos.get(i);
-            String marca = Candidatos.contiene(vigentes, p) ? "[posible]  " : "[descartado]";
-            ui.mostrar("  " + marca + " #" + p.getId() + " " + p.getNombre() + " - " + p.descripcionAtributos());
-        }
-    }
-
 
     // Sorteo independiente entre los 23: no hace falta excluir a nadie (ni el secreto
     // del humano, ni el de la otra máquina). Que coincida con uno ya usado no le da
