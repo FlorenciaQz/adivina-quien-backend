@@ -1,12 +1,10 @@
 package adivinaquien.juego;
 
-import adivinaquien.algoritmos.CatalogoPreguntas;
 import adivinaquien.algoritmos.Pregunta;
 import adivinaquien.dominio.Personaje;
 import adivinaquien.dominio.Tablero;
 import adivinaquien.persistencia.MarcadorPartidas;
 import adivinaquien.ui.InterfazUsuario;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -14,16 +12,17 @@ public class MotorJuego {
 
     private final Tablero tablero;
     private final InterfazUsuario ui;
-    private final CatalogoPreguntas catalogo;
     private final MarcadorPartidas marcador;
     private final Random random;
+    private final EntradaJugador entrada;
 
-    public MotorJuego(Tablero tablero, InterfazUsuario ui, CatalogoPreguntas catalogo, MarcadorPartidas marcador, Random random) {
+    public MotorJuego(Tablero tablero, InterfazUsuario ui, MarcadorPartidas marcador,
+                      Random random, EntradaJugador entrada) {
         this.tablero = tablero;
         this.ui = ui;
-        this.catalogo = catalogo;
         this.marcador = marcador;
         this.random = random;
+        this.entrada = entrada;
     }
 
     public void jugarMaquinaVsMaquina(Maquina m1, Maquina m2) {
@@ -114,7 +113,7 @@ public class MotorJuego {
                 int opcion = ui.pedirOpcion("Es tu turno. ¿Qué querés hacer?", opciones);
 
                 if (opcion == 1) {
-                    Personaje sospecha = pedirPersonajePorId("¿A quién adivinás? (número): ", tablero.personajes());
+                    Personaje sospecha = entrada.pedirPersonajePorId("¿A quién adivinás? (número): ", tablero.personajes());
                     if (sospecha.getId() == secretoMaquina.getId()) {
                         // Se registra antes de armar el mensaje para que el conteo ya incluya esta victoria.
                         marcador.registrarVictoria(nombreHumano);
@@ -127,7 +126,7 @@ public class MotorJuego {
                     ui.mostrar(nombreHumano + " arriesgó con " + sospecha.getNombre() + " y no era. Se descarta y sigue el juego.");
                     Candidatos.descartar(candidatosHumano, sospecha);
                 } else {
-                    Pregunta pregunta = pedirPreguntaHumano();
+                    Pregunta pregunta = entrada.pedirPregunta();
                     boolean verdad = pregunta.evaluar(secretoMaquina);
                     Candidatos.filtrar(candidatosHumano, pregunta, verdad);
                     ui.mostrar(nombreHumano + " preguntó: \"" + pregunta.texto() + "\" -> "
@@ -192,9 +191,8 @@ public class MotorJuego {
     private boolean obtenerRespuestaConAntiMentira(Pregunta pregunta, Personaje secretoHumano) {
         boolean verdad = pregunta.evaluar(secretoHumano);
         while (true) {
-            int opcion = ui.pedirOpcion(
-                "La máquina pregunta: \"" + pregunta.texto() + "\". ¿Es cierto sobre tu personaje?", List.of("Sí", "No"));
-            boolean respuestaHumano = (opcion == 0);
+            boolean respuestaHumano = entrada.pedirConfirmacion(
+                    "La máquina pregunta: \"" + pregunta.texto() + "\". ¿Es cierto sobre tu personaje?");
             if (respuestaHumano == verdad) {
                 return verdad;
             }
@@ -205,7 +203,8 @@ public class MotorJuego {
     private Personaje pedirSecretoHumano() {
         List<Personaje> todos = tablero.personajes();
         mostrarTablero("Elegí tu personaje secreto. Estos son los disponibles:", todos, todos);
-        return pedirPersonajePorId("Elegí tu personaje secreto por su número (no lo vas a poder cambiar): ", todos);
+        return entrada.pedirPersonajePorId(
+                "Elegí tu personaje secreto por su número (no lo vas a poder cambiar): ", todos);
     }
 
     // Muestra el tablero completo (como tarjetas) marcando cuáles siguen siendo
@@ -219,32 +218,6 @@ public class MotorJuego {
         }
     }
 
-    private Pregunta pedirPreguntaHumano() {
-        List<Pregunta> todas = catalogo.todas();
-        List<String> textos = new ArrayList<String>();
-        for (int i = 0; i < todas.size(); i++) {
-            textos.add(todas.get(i).texto());
-        }
-        int opcion = ui.pedirOpcion("Elegí una pregunta:", textos);
-        return todas.get(opcion);
-    }
-
-    private Personaje pedirPersonajePorId(String prompt, List<Personaje> lista) {
-        while (true) {
-            String texto = ui.pedirTexto(prompt);
-            try {
-                int id = Integer.parseInt(texto.trim());
-                for (int i = 0; i < lista.size(); i++) {
-                    if (lista.get(i).getId() == id) {
-                        return lista.get(i);
-                    }
-                }
-            } catch (NumberFormatException e) {
-                // se ignora, se vuelve a pedir
-            }
-            ui.mostrar("No existe ese personaje. Probá de nuevo.");
-        }
-    }
 
     // Sorteo independiente entre los 23: no hace falta excluir a nadie (ni el secreto
     // del humano, ni el de la otra máquina). Que coincida con uno ya usado no le da

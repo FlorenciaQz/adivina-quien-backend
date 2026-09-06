@@ -8,6 +8,7 @@ import adivinaquien.dominio.Personaje;
 import adivinaquien.dominio.Tablero;
 import adivinaquien.juego.Maquina;
 import adivinaquien.juego.MotorJuego;
+import adivinaquien.juego.EntradaJugador;
 import adivinaquien.persistencia.MarcadorPartidas;
 import adivinaquien.ui.ConsolaUI;
 import adivinaquien.ui.InterfazUsuario;
@@ -31,7 +32,8 @@ public class Main {
         Maquina m2 = new Maquina("Máquina 2", 30, new EstrategiaDesbalanceada(catalogo));
 
         Random random = crearRandom(ui);
-        MotorJuego motor = new MotorJuego(tablero, ui, catalogo, marcador, random);
+        EntradaJugador entrada = new EntradaJugador(ui, catalogo);
+        MotorJuego motor = new MotorJuego(tablero, ui, marcador, random, entrada);
 
         List<String> modos = List.of(
             "Humano vs Máquina (jugás contra M1 y, si ganás, contra M2)",
