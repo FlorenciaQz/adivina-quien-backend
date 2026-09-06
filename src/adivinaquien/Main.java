@@ -12,6 +12,7 @@ import adivinaquien.juego.EntradaJugador;
 import adivinaquien.persistencia.MarcadorPartidas;
 import adivinaquien.ui.ConsolaUI;
 import adivinaquien.ui.InterfazUsuario;
+import adivinaquien.juego.PresentadorJuego;
 import java.util.List;
 import java.util.Random;
 
@@ -33,7 +34,8 @@ public class Main {
 
         Random random = crearRandom(ui);
         EntradaJugador entrada = new EntradaJugador(ui, catalogo);
-        MotorJuego motor = new MotorJuego(tablero, ui, marcador, random, entrada);
+        PresentadorJuego presentador = new PresentadorJuego(ui);
+        MotorJuego motor = new MotorJuego(tablero, ui, marcador, random, entrada, presentador);
 
         List<String> modos = List.of(
             "Humano vs Máquina (jugás contra M1 y, si ganás, contra M2)",

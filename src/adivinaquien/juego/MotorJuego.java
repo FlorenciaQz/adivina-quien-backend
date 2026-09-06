@@ -15,14 +15,16 @@ public class MotorJuego {
     private final MarcadorPartidas marcador;
     private final Random random;
     private final EntradaJugador entrada;
+    private final PresentadorJuego presentador;
 
     public MotorJuego(Tablero tablero, InterfazUsuario ui, MarcadorPartidas marcador,
-                      Random random, EntradaJugador entrada) {
+                      Random random, EntradaJugador entrada, PresentadorJuego presentador) {
         this.tablero = tablero;
         this.ui = ui;
         this.marcador = marcador;
         this.random = random;
         this.entrada = entrada;
+        this.presentador = presentador;
     }
 
     public void jugarMaquinaVsMaquina(Maquina m1, Maquina m2) {
@@ -30,7 +32,7 @@ public class MotorJuego {
         Personaje secretoM1 = elegirSecreto(personajes);
         Personaje secretoM2 = elegirSecreto(personajes);
 
-        ui.mostrar("Comienza Máquina vs Máquina. Arranca " + m1.getNombre() + ".");
+        presentador.inicioMaquinaVsMaquina(m1.getNombre());
 
         List<Personaje> candidatosM1 = tablero.personajes();
         List<Personaje> candidatosM2 = tablero.personajes();
@@ -47,20 +49,15 @@ public class MotorJuego {
             // arriesgar, igual que con 1 solo candidato.
             Pregunta pregunta = cantidad == 1 ? null : turno.getEstrategia().mejorPregunta(candidatosDelTurno);
             if (pregunta == null || turno.decideArriesgar(cantidad)) {
-                ui.mostrar(turno.getNombre() + " arriesga y adivina: " + candidatosDelTurno.get(0).getNombre()
-                    + " (tenía " + cantidad + " candidatos posibles).");
                 if (arriesgarYAdivinar(turno.getNombre(), candidatosDelTurno, secretoRival)) {
                     return;
                 }
             } else {
                 int si = Candidatos.contar(candidatosDelTurno, pregunta, true);
-                int no = cantidad - si;
-                ui.mostrar(turno.getNombre() + " pregunta: \"" + pregunta.texto()
-                    + "\" (divide en " + si + " sí / " + no + " no).");
-
+                presentador.preguntaElegida(turno.getNombre(), pregunta, si, cantidad - si);
                 boolean verdad = pregunta.evaluar(secretoRival);
                 Candidatos.filtrar(candidatosDelTurno, pregunta, verdad);
-                ui.mostrar("  -> " + (verdad ? "Sí" : "No") + ". Quedan " + candidatosDelTurno.size() + " candidatos.");
+                presentador.resultadoDeFiltro(verdad, candidatosDelTurno.size());
             }
 
             turnoM1 = !turnoM1;
@@ -71,7 +68,7 @@ public class MotorJuego {
     // El humano conserva su mismo personaje secreto en ambas partidas. M2 arranca con los
     // candidatos que M1 ya habia logrado filtrar (no repite lo que M1 ya averiguo).
     public void jugarFlujoCompleto(String nombreHumano, Maquina m1, Maquina m2) {
-        mostrarRecord(nombreHumano);
+        presentador.record(nombreHumano, marcador.victoriasDe(nombreHumano));
 
         Personaje secretoHumano = pedirSecretoHumano();
         List<Personaje> personajes = tablero.personajes();
@@ -83,18 +80,10 @@ public class MotorJuego {
             return;
         }
 
-        ui.mostrar("Le ganaste a " + m1.getNombre() + ". Ahora jugás contra " + m2.getNombre()
-            + ", que ya sabe lo que " + m1.getNombre() + " averiguó sobre tu personaje.");
+        presentador.transicionAlSegundoRival(m1.getNombre(), m2.getNombre());
 
         Personaje secretoM2 = elegirSecreto(personajes);
         jugarUnaPartidaHumanoVsMaquina(nombreHumano, secretoHumano, m2, secretoM2, candidatosM1);
-    }
-
-    // Muestra cuántas victorias tiene ya registradas este jugador, antes de arrancar.
-    private void mostrarRecord(String nombreHumano) {
-        int victoriasPrevias = marcador.victoriasDe(nombreHumano);
-        String resumen = victoriasPrevias == 1 ? "1 victoria registrada" : victoriasPrevias + " victorias registradas";
-        ui.mostrar("¡Hola " + nombreHumano + "! Llevás " + resumen + ".");
     }
 
     // Corre el loop de turnos de una partida humano-vs-maquina. candidatosMaquina se
@@ -102,7 +91,7 @@ public class MotorJuego {
     // metodo puede seguir usando esa misma lista (asi es como M2 hereda lo de M1).
     // Devuelve true si ganó el humano.
     private boolean jugarUnaPartidaHumanoVsMaquina(String nombreHumano, Personaje secretoHumano, Maquina maquina,
-                                                     Personaje secretoMaquina, List<Personaje> candidatosMaquina) {
+                                                   Personaje secretoMaquina, List<Personaje> candidatosMaquina) {
         List<Personaje> candidatosHumano = tablero.personajes();
         boolean turnoHumano = true;
 
@@ -114,24 +103,24 @@ public class MotorJuego {
                 int opcion = ui.pedirOpcion("Es tu turno. ¿Qué querés hacer?", opciones);
 
                 if (opcion == 1) {
+                    // Se captura antes de descartar, para que el conteo del mensaje sea el
+                    // que tenía el jugador al momento de arriesgar.
+                    int candidatosPrevios = candidatosHumano.size();
                     Personaje sospecha = entrada.pedirPersonajePorId("¿A quién adivinás? (número): ", tablero.personajes());
                     if (sospecha.getId() == secretoMaquina.getId()) {
                         // Se registra antes de armar el mensaje para que el conteo ya incluya esta victoria.
                         marcador.registrarVictoria(nombreHumano);
-                        int totalVictorias = marcador.victoriasDe(nombreHumano);
-                        String resumen = totalVictorias == 1 ? "1 victoria" : totalVictorias + " victorias";
-                        ui.mostrar(nombreHumano + " adivinó: " + sospecha.getNombre() + ". ¡" + nombreHumano
-                            + " gana! Llevás " + resumen + ".");
+                        presentador.victoriaDelHumano(nombreHumano, sospecha, candidatosPrevios,
+                                marcador.victoriasDe(nombreHumano));
                         return true;
                     }
-                    ui.mostrar(nombreHumano + " arriesgó con " + sospecha.getNombre() + " y no era. Se descarta y sigue el juego.");
+                    presentador.adivinanza(nombreHumano, sospecha, false, candidatosPrevios);
                     Candidatos.descartar(candidatosHumano, sospecha);
                 } else {
                     Pregunta pregunta = entrada.pedirPregunta();
                     boolean verdad = pregunta.evaluar(secretoMaquina);
                     Candidatos.filtrar(candidatosHumano, pregunta, verdad);
-                    ui.mostrar(nombreHumano + " preguntó: \"" + pregunta.texto() + "\" -> "
-                        + (verdad ? "Sí" : "No") + ". Quedan " + candidatosHumano.size() + " candidatos.");
+                    presentador.preguntaConResultado(nombreHumano, pregunta, verdad, candidatosHumano.size());
                 }
 
             } else {
@@ -142,14 +131,13 @@ public class MotorJuego {
                 Pregunta pregunta = cantidad == 1 ? null : maquina.getEstrategia().mejorPregunta(candidatosMaquina);
                 if (pregunta == null || maquina.decideArriesgar(cantidad)) {
                     if (arriesgarYAdivinar(maquina.getNombre(), candidatosMaquina, secretoHumano)) {
-                        mostrarVictoriasSinCambios(nombreHumano);
+                        presentador.victoriasSinCambios(marcador.victoriasDe(nombreHumano));
                         return false;
                     }
                 } else {
                     boolean verdad = obtenerRespuestaConAntiMentira(pregunta, secretoHumano);
                     Candidatos.filtrar(candidatosMaquina, pregunta, verdad);
-                    ui.mostrar(maquina.getNombre() + " preguntó: \"" + pregunta.texto() + "\" -> "
-                        + (verdad ? "Sí" : "No") + ". Quedan " + candidatosMaquina.size() + " candidatos.");
+                    presentador.preguntaConResultado(maquina.getNombre(), pregunta, verdad, candidatosMaquina.size());
                 }
             }
 
@@ -157,31 +145,13 @@ public class MotorJuego {
         }
     }
 
-    // Cuando el humano pierde la partida, el marcador no cambia: se lo aclara para que
-    // no parezca que se reseteó.
-    private void mostrarVictoriasSinCambios(String nombreHumano) {
-        int totalVictorias = marcador.victoriasDe(nombreHumano);
-        String resumen = totalVictorias == 1 ? "1 victoria" : totalVictorias + " victorias";
-        ui.mostrar("Se mantienen tus " + resumen + ".");
-    }
-
-    // imprime el resultado de una adivinanza y devuelve si acertó. Errar no termina
-    // la partida: solo descarta ese personaje (lo hace el llamador) y sigue el juego.
-    private boolean anunciarAdivinanza(String nombreAdivinador, Personaje sospecha, Personaje secretoReal) {
-        boolean acierto = sospecha.getId() == secretoReal.getId();
-        if (acierto) {
-            ui.mostrar(nombreAdivinador + " adivinó: " + sospecha.getNombre() + ". ¡" + nombreAdivinador + " gana!");
-        } else {
-            ui.mostrar(nombreAdivinador + " arriesgó con " + sospecha.getNombre() + " y no era. Se descarta y sigue el juego.");
-        }
-        return acierto;
-    }
-
     // Arriesga: adivina el primer candidato restante. Si acierta, el llamador corta el
     // juego; si falla, se descarta ese candidato y el turno sigue. Devuelve si acertó.
     private boolean arriesgarYAdivinar(String nombreAdivinador, List<Personaje> candidatos, Personaje secretoReal) {
         Personaje sospecha = candidatos.get(0);
-        boolean acierto = anunciarAdivinanza(nombreAdivinador, sospecha, secretoReal);
+        int candidatosPrevios = candidatos.size();
+        boolean acierto = sospecha.getId() == secretoReal.getId();
+        presentador.adivinanza(nombreAdivinador, sospecha, acierto, candidatosPrevios);
         if (!acierto) {
             Candidatos.descartar(candidatos, sospecha);
         }
@@ -192,12 +162,11 @@ public class MotorJuego {
     private boolean obtenerRespuestaConAntiMentira(Pregunta pregunta, Personaje secretoHumano) {
         boolean verdad = pregunta.evaluar(secretoHumano);
         while (true) {
-            boolean respuestaHumano = entrada.pedirConfirmacion(
-                    "La máquina pregunta: \"" + pregunta.texto() + "\". ¿Es cierto sobre tu personaje?");
+            boolean respuestaHumano = entrada.pedirConfirmacion(presentador.promptAntiMentira(pregunta));
             if (respuestaHumano == verdad) {
                 return verdad;
             }
-            ui.mostrar("Eso no es cierto sobre tu personaje.");
+            presentador.respuestaRechazada();
         }
     }
 
