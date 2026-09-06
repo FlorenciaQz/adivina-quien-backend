@@ -35,7 +35,7 @@ public class Main {
         Random random = crearRandom(ui);
         EntradaJugador entrada = new EntradaJugador(ui, catalogo);
         PresentadorJuego presentador = new PresentadorJuego(ui);
-        MotorJuego motor = new MotorJuego(tablero, ui, marcador, random, entrada, presentador);
+        MotorJuego motor = new MotorJuego(tablero, marcador, random, entrada, presentador);
 
         List<String> modos = List.of(
             "Humano vs Máquina (jugás contra M1 y, si ganás, contra M2)",

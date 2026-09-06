@@ -4,23 +4,20 @@ import adivinaquien.algoritmos.Pregunta;
 import adivinaquien.dominio.Personaje;
 import adivinaquien.dominio.Tablero;
 import adivinaquien.persistencia.MarcadorPartidas;
-import adivinaquien.ui.InterfazUsuario;
 import java.util.List;
 import java.util.Random;
 
 public class MotorJuego {
 
     private final Tablero tablero;
-    private final InterfazUsuario ui;
     private final MarcadorPartidas marcador;
     private final Random random;
     private final EntradaJugador entrada;
     private final PresentadorJuego presentador;
 
-    public MotorJuego(Tablero tablero, InterfazUsuario ui, MarcadorPartidas marcador,
-                      Random random, EntradaJugador entrada, PresentadorJuego presentador) {
+    public MotorJuego(Tablero tablero, MarcadorPartidas marcador, Random random,
+                      EntradaJugador entrada, PresentadorJuego presentador) {
         this.tablero = tablero;
-        this.ui = ui;
         this.marcador = marcador;
         this.random = random;
         this.entrada = entrada;
@@ -97,16 +94,13 @@ public class MotorJuego {
 
         while (true) {
             if (turnoHumano) {
-                ui.mostrarTablero("Candidatos para el secreto del rival:",
-                        tablero.personajes(), Candidatos.ids(candidatosHumano));
-                List<String> opciones = List.of("Hacer una pregunta", "Adivinar un personaje");
-                int opcion = ui.pedirOpcion("Es tu turno. ¿Qué querés hacer?", opciones);
+                presentador.tableroDeCandidatos(tablero.personajes(), Candidatos.ids(candidatosHumano));
 
-                if (opcion == 1) {
+                if (entrada.pedirSiAdivina()) {
                     // Se captura antes de descartar, para que el conteo del mensaje sea el
                     // que tenía el jugador al momento de arriesgar.
                     int candidatosPrevios = candidatosHumano.size();
-                    Personaje sospecha = entrada.pedirPersonajePorId("¿A quién adivinás? (número): ", tablero.personajes());
+                    Personaje sospecha = entrada.pedirPersonajeAAdivinar(tablero.personajes());
                     if (sospecha.getId() == secretoMaquina.getId()) {
                         // Se registra antes de armar el mensaje para que el conteo ya incluya esta victoria.
                         marcador.registrarVictoria(nombreHumano);
@@ -172,10 +166,8 @@ public class MotorJuego {
 
     private Personaje pedirSecretoHumano() {
         List<Personaje> todos = tablero.personajes();
-        ui.mostrarTablero("Elegí tu personaje secreto. Estos son los disponibles:",
-                todos, Candidatos.ids(todos));
-        return entrada.pedirPersonajePorId(
-                "Elegí tu personaje secreto por su número (no lo vas a poder cambiar): ", todos);
+        presentador.tableroParaElegirSecreto(todos, Candidatos.ids(todos));
+        return entrada.pedirSecreto(todos);
     }
 
     // Sorteo independiente entre los 23: no hace falta excluir a nadie (ni el secreto

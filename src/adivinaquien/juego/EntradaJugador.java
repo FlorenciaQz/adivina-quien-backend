@@ -20,7 +20,23 @@ public final class EntradaJugador {
         this.catalogo = catalogo;
     }
 
-    public Personaje pedirPersonajePorId(String prompt, List<Personaje> lista) {
+    // El jugador elige entre preguntar o adivinar. Devuelve true si quiere adivinar,
+    // asi el motor no tiene que saber en que posicion de la lista quedo cada opcion.
+    public boolean pedirSiAdivina() {
+        return ui.pedirOpcion("Es tu turno. ¿Qué querés hacer?",
+                List.of("Hacer una pregunta", "Adivinar un personaje")) == 1;
+    }
+
+    public Personaje pedirPersonajeAAdivinar(List<Personaje> lista) {
+        return pedirPersonajePorId("¿A quién adivinás? (número): ", lista);
+    }
+
+    public Personaje pedirSecreto(List<Personaje> lista) {
+        return pedirPersonajePorId(
+                "Elegí tu personaje secreto por su número (no lo vas a poder cambiar): ", lista);
+    }
+
+    private Personaje pedirPersonajePorId(String prompt, List<Personaje> lista) {
         while (true) {
             String texto = ui.pedirTexto(prompt);
             try {

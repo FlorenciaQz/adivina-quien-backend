@@ -3,6 +3,8 @@ package adivinaquien.juego;
 import adivinaquien.algoritmos.Pregunta;
 import adivinaquien.dominio.Personaje;
 import adivinaquien.ui.InterfazUsuario;
+import java.util.List;
+import java.util.Set;
 
 // Traduce lo que pasa en la partida a los textos que ve el jugador. Es el unico
 // lugar donde se arman mensajes: el motor dice que paso, no como se escribe.
@@ -13,6 +15,14 @@ public final class PresentadorJuego {
 
     public PresentadorJuego(InterfazUsuario ui) {
         this.ui = ui;
+    }
+
+    public void tableroDeCandidatos(List<Personaje> todos, Set<Integer> idsVigentes) {
+        ui.mostrarTablero("Candidatos para el secreto del rival:", todos, idsVigentes);
+    }
+
+    public void tableroParaElegirSecreto(List<Personaje> todos, Set<Integer> idsVigentes) {
+        ui.mostrarTablero("Elegí tu personaje secreto. Estos son los disponibles:", todos, idsVigentes);
     }
 
     public void record(String nombreHumano, int victorias) {
