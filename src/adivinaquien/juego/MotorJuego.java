@@ -7,7 +7,6 @@ import adivinaquien.dominio.Tablero;
 import adivinaquien.persistencia.MarcadorPartidas;
 import adivinaquien.ui.InterfazUsuario;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -54,13 +53,13 @@ public class MotorJuego {
                     return;
                 }
             } else {
-                int si = contarCoincidencias(candidatosDelTurno, pregunta, true);
+                int si = Candidatos.contar(candidatosDelTurno, pregunta, true);
                 int no = cantidad - si;
                 ui.mostrar(turno.getNombre() + " pregunta: \"" + pregunta.texto()
                     + "\" (divide en " + si + " sí / " + no + " no).");
 
                 boolean verdad = pregunta.evaluar(secretoRival);
-                filtrarCandidatos(candidatosDelTurno, pregunta, verdad);
+                Candidatos.filtrar(candidatosDelTurno, pregunta, verdad);
                 ui.mostrar("  -> " + (verdad ? "Sí" : "No") + ". Quedan " + candidatosDelTurno.size() + " candidatos.");
             }
 
@@ -125,11 +124,11 @@ public class MotorJuego {
                         return true;
                     }
                     ui.mostrar(nombreHumano + " arriesgó con " + sospecha.getNombre() + " y no era. Se descarta y sigue el juego.");
-                    descartarCandidato(candidatosHumano, sospecha);
+                    Candidatos.descartar(candidatosHumano, sospecha);
                 } else {
                     Pregunta pregunta = pedirPreguntaHumano();
                     boolean verdad = pregunta.evaluar(secretoMaquina);
-                    filtrarCandidatos(candidatosHumano, pregunta, verdad);
+                    Candidatos.filtrar(candidatosHumano, pregunta, verdad);
                     ui.mostrar(nombreHumano + " preguntó: \"" + pregunta.texto() + "\" -> "
                         + (verdad ? "Sí" : "No") + ". Quedan " + candidatosHumano.size() + " candidatos.");
                 }
@@ -147,7 +146,7 @@ public class MotorJuego {
                     }
                 } else {
                     boolean verdad = obtenerRespuestaConAntiMentira(pregunta, secretoHumano);
-                    filtrarCandidatos(candidatosMaquina, pregunta, verdad);
+                    Candidatos.filtrar(candidatosMaquina, pregunta, verdad);
                     ui.mostrar(maquina.getNombre() + " preguntó: \"" + pregunta.texto() + "\" -> "
                         + (verdad ? "Sí" : "No") + ". Quedan " + candidatosMaquina.size() + " candidatos.");
                 }
@@ -183,19 +182,9 @@ public class MotorJuego {
         Personaje sospecha = candidatos.get(0);
         boolean acierto = anunciarAdivinanza(nombreAdivinador, sospecha, secretoReal);
         if (!acierto) {
-            descartarCandidato(candidatos, sospecha);
+            Candidatos.descartar(candidatos, sospecha);
         }
         return acierto;
-    }
-
-    private void descartarCandidato(List<Personaje> candidatos, Personaje aDescartar) {
-        Iterator<Personaje> it = candidatos.iterator();
-        while (it.hasNext()) {
-            if (it.next().getId() == aDescartar.getId()) {
-                it.remove();
-                return;
-            }
-        }
     }
 
     // La maquina le pregunta al humano: no puede mentir, si contesta mal se rechaza y se vuelve a pedir.
@@ -212,26 +201,6 @@ public class MotorJuego {
         }
     }
 
-    private void filtrarCandidatos(List<Personaje> candidatos, Pregunta pregunta, boolean verdad) {
-        Iterator<Personaje> it = candidatos.iterator();
-        while (it.hasNext()) {
-            Personaje p = it.next();
-            if (pregunta.evaluar(p) != verdad) {
-                it.remove();
-            }
-        }
-    }
-
-    private int contarCoincidencias(List<Personaje> candidatos, Pregunta pregunta, boolean valor) {
-        int cantidad = 0;
-        for (int i = 0; i < candidatos.size(); i++) {
-            if (pregunta.evaluar(candidatos.get(i)) == valor) {
-                cantidad++;
-            }
-        }
-        return cantidad;
-    }
-
     private Personaje pedirSecretoHumano() {
         List<Personaje> todos = tablero.personajes();
         mostrarTablero("Elegí tu personaje secreto. Estos son los disponibles:", todos, todos);
@@ -244,18 +213,9 @@ public class MotorJuego {
         ui.limpiarYMostrar(titulo);
         for (int i = 0; i < todos.size(); i++) {
             Personaje p = todos.get(i);
-            String marca = esVigente(p, vigentes) ? "[posible]  " : "[descartado]";
+            String marca = Candidatos.contiene(vigentes, p) ? "[posible]  " : "[descartado]";
             ui.mostrar("  " + marca + " #" + p.getId() + " " + p.getNombre() + " - " + p.descripcionAtributos());
         }
-    }
-
-    private boolean esVigente(Personaje p, List<Personaje> vigentes) {
-        for (int i = 0; i < vigentes.size(); i++) {
-            if (vigentes.get(i).getId() == p.getId()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private Pregunta pedirPreguntaHumano() {
