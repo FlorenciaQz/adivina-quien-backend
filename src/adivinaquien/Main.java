@@ -59,10 +59,7 @@ public class Main {
             }
         };
 
-        // Con la ventana gráfica, el juego tiene que correr en su propio hilo: el
-        // hilo principal queda libre para el event dispatch thread de Swing, que es
-        // el único que puede tocar los componentes de la ventana. En consola no hace
-        // falta, no hay nada más compitiendo por el hilo.
+        // La ventana necesita su propio hilo para el juego; en consola no hace falta.
         if (ui instanceof InterfazGrafica) {
             Thread hiloJuego = new Thread(juego, "motor-juego");
             hiloJuego.setDaemon(true);

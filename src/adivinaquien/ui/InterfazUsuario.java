@@ -10,7 +10,6 @@ public interface InterfazUsuario {
     String pedirTexto(String prompt);
     int pedirOpcion(String prompt, List<String> opciones);
 
-    // Pide que se elija uno de 'elegibles'. En consola se tipea el id; en la ventana
-    // gráfica se hace clickeando la tarjeta correspondiente.
+    // en consola se tipea el id; en la ventana, se clickea la tarjeta.
     Personaje pedirPersonaje(String prompt, List<Personaje> elegibles);
 }

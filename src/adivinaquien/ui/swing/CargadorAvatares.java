@@ -12,19 +12,14 @@ import java.util.Map;
 import java.util.Optional;
 import javax.imageio.ImageIO;
 
-// Devuelve el avatar de un personaje: busca resources/personajes/<id>.png o .jpg.
-// Si todavía no está cargado, muestra un placeholder mínimo en vez de romper la
-// grilla. Cachea por id para no releer el archivo en cada repintado.
 public class CargadorAvatares {
 
-    // Resolución "maestra" con la que se cachea cada avatar. TarjetaPersonajePanel la
-    // redibuja escalada al tamaño real de cada tarjeta, así que esto solo define el
-    // techo de calidad cuando la ventana (y las tarjetas) crecen.
     private static final int TAMANIO = 220;
     private static final String CARPETA = "resources/personajes";
 
     private final Map<Integer, BufferedImage> cache = new HashMap<>();
 
+    // busca <id>.png o <id>.jpg; si no existe, cae al placeholder.
     public BufferedImage generar(Personaje personaje) {
         return cache.computeIfAbsent(personaje.getId(), id -> cargarArchivo(id).orElseGet(this::placeholder));
     }
@@ -44,10 +39,7 @@ public class CargadorAvatares {
         return Optional.empty();
     }
 
-    // Escala cualquier imagen (sea cual sea su resolución original) a un cuadrado de
-    // TAMANIO x TAMANIO, recortando al centro en vez de deformarla — mismo efecto que
-    // "object-fit: cover" en CSS. Así todas las tarjetas quedan del mismo tamaño sin
-    // depender de que las imágenes que carguen ya vengan cuadradas.
+    // recorta al centro en vez de deformar, para que las tarjetas queden cuadradas.
     private BufferedImage escalar(BufferedImage original) {
         BufferedImage resultado = new BufferedImage(TAMANIO, TAMANIO, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = resultado.createGraphics();

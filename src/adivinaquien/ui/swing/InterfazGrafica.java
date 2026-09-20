@@ -7,9 +7,8 @@ import java.util.Set;
 import java.util.concurrent.SynchronousQueue;
 import javax.swing.SwingUtilities;
 
-// El motor del juego corre en su propio hilo (ver Main); esta clase lo bloquea con
-// una SynchronousQueue hasta que llega la respuesta del usuario desde el hilo de
-// Swing (EDT), que es el único que puede tocar los componentes de la ventana.
+// El motor corre en otro hilo (ver Main); acá se bloquea hasta que llega la
+// respuesta desde el hilo de Swing.
 public class InterfazGrafica implements InterfazUsuario {
 
     private final VentanaJuego ventana = new VentanaJuego();
