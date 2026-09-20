@@ -110,11 +110,13 @@ public class MotorJuego {
                     }
                     presentador.adivinanza(nombreHumano, sospecha, false, candidatosPrevios);
                     Candidatos.descartar(candidatosHumano, sospecha);
+                    presentador.tableroDeCandidatos(tablero.personajes(), Candidatos.ids(candidatosHumano));
                 } else {
                     Pregunta pregunta = entrada.pedirPregunta();
                     boolean verdad = pregunta.evaluar(secretoMaquina);
                     Candidatos.filtrar(candidatosHumano, pregunta, verdad);
                     presentador.preguntaConResultado(nombreHumano, pregunta, verdad, candidatosHumano.size());
+                    presentador.tableroDeCandidatos(tablero.personajes(), Candidatos.ids(candidatosHumano));
                 }
 
             } else {

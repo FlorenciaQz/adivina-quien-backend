@@ -20,7 +20,7 @@ public class CargaPersonajes {
         personajes.add(new Personaje(id++, "Maestro Roshi", Genero.M, ColorPelo.CALVO, true, true));
         personajes.add(new Personaje(id++, "Goku", Genero.M, ColorPelo.NEGRO, false, false));
         personajes.add(new Personaje(id++, "Meruem", Genero.M, ColorPelo.CALVO, false, false));
-        personajes.add(new Personaje(id++, "Rui", Genero.M, ColorPelo.COLORADO, false, false));
+        personajes.add(new Personaje(id++, "Shanks", Genero.M, ColorPelo.COLORADO, false, true));
         personajes.add(new Personaje(id++, "Douma", Genero.M, ColorPelo.BLANCO, false, false));
         personajes.add(new Personaje(id++, "Tsunade", Genero.F, ColorPelo.AMARILLO, false, true));
         personajes.add(new Personaje(id++, "Kalifa", Genero.F, ColorPelo.AMARILLO, true, true));
@@ -31,7 +31,7 @@ public class CargaPersonajes {
         personajes.add(new Personaje(id++, "Nezuko", Genero.F, ColorPelo.NEGRO, false, false));
         personajes.add(new Personaje(id++, "Neferpitou", Genero.F, ColorPelo.BLANCO, false, false));
         personajes.add(new Personaje(id++, "Android 18", Genero.F, ColorPelo.AMARILLO, false, false));
-        personajes.add(new Personaje(id++, "Daki", Genero.F, ColorPelo.COLORADO, false, false));
+        personajes.add(new Personaje(id++, "Big Mom", Genero.F, ColorPelo.COLORADO, false, true));
 
         return personajes;
     }
