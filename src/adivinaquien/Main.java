@@ -13,9 +13,11 @@ import adivinaquien.persistencia.IMarcador;
 import adivinaquien.persistencia.MarcadorPartidas;
 import adivinaquien.ui.ConsolaUI;
 import adivinaquien.ui.InterfazUsuario;
+import adivinaquien.ui.swing.InterfazGrafica;
 import adivinaquien.juego.PresentadorJuego;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 
 public class Main {
 
@@ -23,7 +25,7 @@ public class Main {
         List<Personaje> personajes = CargaPersonajes.crearTodos();
         Tablero tablero = new Tablero(personajes);
 
-        InterfazUsuario ui = new ConsolaUI();
+        InterfazUsuario ui = elegirInterfaz();
         CatalogoPreguntas catalogo = new CatalogoPreguntas();
         IMarcador marcador = new MarcadorPartidas();
 
@@ -38,16 +40,53 @@ public class Main {
         PresentadorJuego presentador = new PresentadorJuego(ui);
         MotorJuego motor = new MotorJuego(tablero, marcador, random, entrada, presentador);
 
-        List<String> modos = List.of(
-            "Humano vs Máquina (jugás contra M1 y, si ganás, contra M2)",
-            "Máquina vs Máquina (mirá a la IA jugar sola)");
-        int opcion = ui.pedirOpcion("Elegí un modo de juego:", modos);
+        Runnable juego = () -> {
+            boolean jugarDeNuevo = true;
+            while (jugarDeNuevo) {
+                List<String> modos = List.of(
+                    "Humano vs Máquina (jugás contra M1 y, si ganás, contra M2)",
+                    "Máquina vs Máquina (mirá a la IA jugar sola)");
+                int opcion = ui.pedirOpcion("Elegí un modo de juego:", modos);
 
-        if (opcion == 0) {
-            String nombreHumano = ui.pedirTexto("¿Cómo te llamás?: ");
-            motor.jugarFlujoCompleto(nombreHumano, m1, m2);
+                if (opcion == 0) {
+                    String nombreHumano = ui.pedirTexto("¿Cómo te llamás?: ");
+                    motor.jugarFlujoCompleto(nombreHumano, m1, m2);
+                } else {
+                    motor.jugarMaquinaVsMaquina(m1, m2);
+                }
+
+                jugarDeNuevo = ui.pedirOpcion("¿Querés jugar de nuevo?", List.of("Sí", "No")) == 0;
+            }
+        };
+
+        // Con la ventana gráfica, el juego tiene que correr en su propio hilo: el
+        // hilo principal queda libre para el event dispatch thread de Swing, que es
+        // el único que puede tocar los componentes de la ventana. En consola no hace
+        // falta, no hay nada más compitiendo por el hilo.
+        if (ui instanceof InterfazGrafica) {
+            Thread hiloJuego = new Thread(juego, "motor-juego");
+            hiloJuego.setDaemon(true);
+            hiloJuego.start();
         } else {
-            motor.jugarMaquinaVsMaquina(m1, m2);
+            juego.run();
+        }
+    }
+
+    private static InterfazUsuario elegirInterfaz() {
+        System.out.println("¿Cómo querés jugar?");
+        System.out.println("  1. Consola");
+        System.out.println("  2. Ventana");
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            System.out.print("Elegí una opción: ");
+            String linea = scanner.nextLine().trim();
+            if (linea.equals("2")) {
+                return new InterfazGrafica();
+            }
+            if (linea.equals("1") || linea.isEmpty()) {
+                return new ConsolaUI(scanner);
+            }
+            System.out.println("Opción inválida.");
         }
     }
 

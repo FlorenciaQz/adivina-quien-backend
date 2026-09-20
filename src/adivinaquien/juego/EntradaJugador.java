@@ -28,29 +28,12 @@ public final class EntradaJugador {
     }
 
     public Personaje pedirPersonajeAAdivinar(List<Personaje> lista) {
-        return pedirPersonajePorId("¿A quién adivinás? (número): ", lista);
+        return ui.pedirPersonaje("¿A quién adivinás? (número): ", lista);
     }
 
     public Personaje pedirSecreto(List<Personaje> lista) {
-        return pedirPersonajePorId(
+        return ui.pedirPersonaje(
                 "Elegí tu personaje secreto por su número (no lo vas a poder cambiar): ", lista);
-    }
-
-    private Personaje pedirPersonajePorId(String prompt, List<Personaje> lista) {
-        while (true) {
-            String texto = ui.pedirTexto(prompt);
-            try {
-                int id = Integer.parseInt(texto.trim());
-                for (int i = 0; i < lista.size(); i++) {
-                    if (lista.get(i).getId() == id) {
-                        return lista.get(i);
-                    }
-                }
-            } catch (NumberFormatException e) {
-                // se ignora, se vuelve a pedir
-            }
-            ui.mostrar("No existe ese personaje. Probá de nuevo.");
-        }
     }
 
     public Pregunta pedirPregunta() {

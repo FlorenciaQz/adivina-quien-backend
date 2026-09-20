@@ -9,4 +9,8 @@ public interface InterfazUsuario {
     void mostrarTablero(String titulo, List<Personaje> todos, Set<Integer> idsVigentes);
     String pedirTexto(String prompt);
     int pedirOpcion(String prompt, List<String> opciones);
+
+    // Pide que se elija uno de 'elegibles'. En consola se tipea el id; en la ventana
+    // gráfica se hace clickeando la tarjeta correspondiente.
+    Personaje pedirPersonaje(String prompt, List<Personaje> elegibles);
 }

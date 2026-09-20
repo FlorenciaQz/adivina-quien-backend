@@ -11,7 +11,15 @@ public class ConsolaUI implements InterfazUsuario {
     private static final String ANSI_ROJO = "\u001B[31m";
     private static final String ANSI_VERDE = "\u001B[32m";
 
-    private final Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner;
+
+    public ConsolaUI() {
+        this(new Scanner(System.in));
+    }
+
+    public ConsolaUI(Scanner scanner) {
+        this.scanner = scanner;
+    }
 
     public void mostrar(String mensaje) {
         System.out.println(mensaje);
@@ -51,6 +59,23 @@ public class ConsolaUI implements InterfazUsuario {
             String marca = vigente ? "[posible]  " : "[descartado]";
             System.out.println(color + "  " + marca + " #" + p.getId() + " "
                     + p.getNombre() + " - " + p.descripcionAtributos() + ANSI_RESET);
+        }
+    }
+
+    public Personaje pedirPersonaje(String prompt, List<Personaje> elegibles) {
+        while (true) {
+            String texto = pedirTexto(prompt);
+            try {
+                int id = Integer.parseInt(texto.trim());
+                for (int i = 0; i < elegibles.size(); i++) {
+                    if (elegibles.get(i).getId() == id) {
+                        return elegibles.get(i);
+                    }
+                }
+            } catch (NumberFormatException e) {
+                // se ignora, se vuelve a pedir
+            }
+            mostrar("No existe ese personaje. Probá de nuevo.");
         }
     }
 
