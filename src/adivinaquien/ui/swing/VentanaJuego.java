@@ -40,6 +40,21 @@ public class VentanaJuego extends JFrame {
     public VentanaJuego() {
         super("Adivina Quién");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        grilla = new JPanel();
+        grillaScroll = new JScrollPane(grilla);
+        log = new JTextArea();
+        logScroll = new JScrollPane(log);
+        panelAccion = new JPanel();
+
+        JPanel abajo = new JPanel(new BorderLayout());
+        abajo.add(logScroll, BorderLayout.NORTH);
+        abajo.add(panelAccion, BorderLayout.CENTER);
+
+        panel1 = new JPanel(new BorderLayout());
+        panel1.add(grillaScroll, BorderLayout.CENTER);
+        panel1.add(abajo, BorderLayout.SOUTH);
+
         setContentPane(panel1);
         setSize(1050, 900);
         setLocationRelativeTo(null);
