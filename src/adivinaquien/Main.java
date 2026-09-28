@@ -21,11 +21,17 @@ import java.util.Scanner;
 
 public class Main {
 
+    // Punto de entrada desde el IDE o la consola: pregunta cómo querés jugar.
     public static void main(String[] args) {
+        iniciar(elegirInterfaz());
+    }
+
+    // Arranca el juego con la interfaz que se le pase. Lo usan tanto main como
+    // LanzadorVentana (el punto de entrada del .jar).
+    public static void iniciar(InterfazUsuario ui) {
         List<Personaje> personajes = CargaPersonajes.crearTodos();
         Tablero tablero = new Tablero(personajes);
 
-        InterfazUsuario ui = elegirInterfaz();
         CatalogoPreguntas catalogo = new CatalogoPreguntas();
         IMarcador marcador = new MarcadorPartidas();
 
